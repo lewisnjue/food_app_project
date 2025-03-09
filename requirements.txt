@@ -3,4 +3,5 @@ uvicorn
 pydantic 
 python-dotenv 
 transformers
-pytorch 
+python-multipart
+pillow 
