@@ -3,16 +3,16 @@ name: ci
 on:
   push:
     branches:
-      - main 
+      - main
     tags:
-      - 'v*' 
+      - 'v*' # optional: if you want to trigger on version tags too
 
 jobs:
   docker:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Login to Docker Hub
@@ -27,22 +27,22 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Extract Git information
-        id: git_info
+      - name: Extract Git metadata
+        id: vars
         run: |
-          echo "COMMIT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
-          echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          echo "SHA=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          echo "BRANCH=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+          # Optional: only add if it's a tag
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            echo "VERSION_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+            echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           fi
-          echo "IMAGE_NAME=lewiskinyuanjue/food-project" >> $GITHUB_ENV
 
       - name: Build and push Docker images
         uses: docker/build-push-action@v6
         with:
           push: true
-          platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}
-            ${{ env.IMAGE_NAME }}:${{ env.VERSION_TAG }}
+            lewiskinyuanjue/food-project:latest
+            lewiskinyuanjue/food-project:${{ steps.vars.outputs.SHA }}
+            lewiskinyuanjue/food-project:${{ steps.vars.outputs.BRANCH }}
+            ${{ steps.vars.outputs.TAG && format('lewiskinyuanjue/food-project:{0}', steps.vars.outputs.TAG) }}
