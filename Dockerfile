@@ -9,13 +9,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 COPY requirements.txt .
-
-RUN pip install --upgrade pip \
-    && pip install -r requirements.txt \
-    && pip cache purge
+COPY install.sh . 
 
 COPY ./src ./src
 
 EXPOSE 8000
-
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+RUN chmod +x install.sh 
+ENTRYPOINT [ "./install.sh" ]
