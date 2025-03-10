@@ -5,3 +5,5 @@ python-dotenv
 transformers
 python-multipart
 pillow 
+cassandra-driver
+pydantic-settings

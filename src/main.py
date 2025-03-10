@@ -1,13 +1,13 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Annotated
 from PIL import Image
 import io
-
+from cassandra.cqlengine.management import sync_table 
+from . import db 
 from .model import pipe
-
+from users.models import User 
 app = FastAPI()
-
+DB_SESSION = None 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,6 +15,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+def on_startup():
+    global DB_SESSION
+    DB_SESSION = db.get_session()
+    sync_table(User)
+
+
 
 @app.get('/')
 async def home():
